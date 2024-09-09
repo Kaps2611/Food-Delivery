@@ -19,6 +19,6 @@ app.use(express.json())
 // app.use is a middleware
 app.use('/api',require("./Routes/createUser"));
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT);
