@@ -2,17 +2,19 @@ import React, { useState } from 'react'
 import {Link}  from 'react-router-dom'
 
 export default function Signup() {
-  const [credentials,setcredentials] = useState({name:" ",email:" ",password:" ",geolocation:" "})
+  const [credentials,setcredentials] = useState({name:" ",email:" ",password:"",geolocation:" "})
 
   const handleSubmit = async(e)=>{
 
     e.preventDefault();// synthetic event 
+
+    console.log(JSON.stringify({name:credentials.name,email:credentials.email,password:credentials.password,location:credentials.geolocation}))
     const response = await fetch("http://localhost:5000/api/createuser",{
       method:'POST',
       headers:{
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({name:credentials.name,email:credentials.email,password:credentials.password,location:credentials.geolocation})
+      body:JSON.stringify({name:credentials.name, email:credentials.email, password:credentials.password, location:credentials.geolocation})
     });
     const json = await response.json()
     console.log(json)

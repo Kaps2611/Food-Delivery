@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import { Link ,useNavigate} from 'react-router-dom'
 export default function Login() {
 
-  const [credentials, setcredentials] = useState({ email: " ", password: " " })
+  const [credentials, setcredentials] = useState({ email: " ", password: "" })
   let navigate = useNavigate()
+  
   const handleSubmit = async (e) => {
 
     e.preventDefault();// synthetic event 
@@ -21,7 +22,8 @@ export default function Login() {
       alert("Enter valid credentials")
     }
     if (json.success) {
-      navigate("/Home")
+      localStorage.setItem("authToken",json.authToken);
+      navigate("/")
     }
 
   }

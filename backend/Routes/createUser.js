@@ -3,6 +3,9 @@ const router = express.Router()
 const User = require("../models/User")
 // const { ExpressValidator } = require("express-validator")
 const { body, validationResult } = require("express-validator")
+const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const jwtSecret = "jhbhfhbBhbyugfbhjbdfhyu"
 
 router.post("/createuser", [body('email', 'Invalid email').isEmail(),
 body('name', 'Length must be 5').isLength({ min: 5 }),
@@ -12,15 +15,19 @@ body('password', 'incorrect password').isLength({ min: 5 })]
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+
+    const salt = await bcrypt.genSalt(10);
+    let secPassword = await bcrypt.hash(req.body.password,salt)
+
     try {
       await User.create({
         name: req.body.name,
-        password: req.body.password,
+        password: secPassword,
         email: req.body.email,
         location: req.body.location
-      })
-      res.json({ success: true });
-    } catch (error) {
+      }).then(res.json({ success: true }));
+    } 
+    catch (error) {
       console.log(error);
       res.json({ success: false });
 
@@ -28,7 +35,7 @@ body('password', 'incorrect password').isLength({ min: 5 })]
   })
 
 
-router.post("/loginuser", [body('email', 'Invalid email').isEmail()], async (req, res) => {
+router.post("/loginuser", [body('email', 'Invalid email').isEmail(),body('password','Incorrect Password').isLength({min:5})], async (req, res) => {
 
 
   const errors = validationResult(req);
@@ -39,20 +46,29 @@ router.post("/loginuser", [body('email', 'Invalid email').isEmail()], async (req
 
 
   try {
-    let userData = await User.findOne({ email })
+    let userData = await User.findOne( {email} )
     if (!userData) {
       return res.status(400).json({ error: "Login with correct credentials" })
     }
 
-    if (req.body.password !== userData.password) {
+    const pwdCompare = await bcrypt.compare(req.body.password,userData.password)
+
+    if (!pwdCompare) {
       return res.status(400).json({ error: "Login with correct credentials" })
     }
 
-    res.json({ success: true });
+    const data = {
+      user:{
+        id:userData.id
+      }
+    }
+
+    const authToken = jwt.sign(data,jwtSecret)
+    res.json({ success: true ,authToken:authToken});
 
 
 
-  } 
+  }
   catch (error) {
     console.log(error);
     res.json({ success: false });
